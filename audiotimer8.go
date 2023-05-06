@@ -1,68 +1,50 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
+	"strconv"
+	"sync"
 	"time"
-
-	"golang.org/x/sys/windows/svc"
 )
 
-type myService struct{}
-
-func (m *myService) Execute(args []string, r <-chan svc.ChangeRequest, changes chan<- svc.Status) (svcSpecificEC bool, exitCode uint32) {
-	const cmdsAccepted = svc.AcceptStop | svc.AcceptShutdown
-
-	changes <- svc.Status{State: svc.StartPending}
-	changes <- svc.Status{State: svc.Running, Accepts: cmdsAccepted}
-
-	file, err := os.OpenFile("output.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Println("Error opening the file:", err)
-		return
-	}
-	defer file.Close()
-
-mainLoop:
+func main() {
 	for {
-		select {
-		case req := <-r:
-			switch req.Cmd {
-			case svc.Stop, svc.Shutdown:
-				changes <- svc.Status{State: svc.StopPending}
-				break mainLoop
-			default:
-				log.Printf("unexpected control request #%d", req)
-			}
-		default:
-			currentTime := time.Now().Format("2006-01-02 15:04:05")
-			_, err := file.WriteString(currentTime + "\n")
-			if err != nil {
-				log.Println("Error writing to the file:", err)
-			}
-			time.Sleep(1 * time.Minute)
+		err := runProgram()
+		if err != nil {
+			log.Printf("Program failed with error: %v, restarting...\n", err)
+			time.Sleep(1 * time.Second)
 		}
 	}
-
-	return
 }
 
-func main() {
-	isInteractive, err := svc.IsAnInteractiveSession()
-	if err != nil {
-		log.Fatalf("failed to determine if we are running in an interactive session: %v", err)
-	}
-	if isInteractive {
-		log.Println("This program is designed to run as a Windows Service. Please install and start the service.")
-		return
-	}
+func runProgram() error {
+	startTime := time.Now()
+	var wg sync.WaitGroup
+	var err error
+	wg.Add(1)
 
-	runService("MyTimeWriterSvc", &myService{})
-}
+	go func() {
+		defer wg.Done()
+		for {
+			elapsed := time.Since(startTime)
+			fileName := fmt.Sprintf("count_%d.txt", int(elapsed.Seconds()))
+			err = ioutil.WriteFile(fileName, []byte(strconv.Itoa(int(elapsed.Seconds()))), 0644)
+			if err != nil {
+				log.Printf("Failed to create file: %v", err)
+				return
+			}
+			time.Sleep(10 * time.Second)
+		}
+	}()
 
-func runService(name string, s svc.Handler) {
-	err := svc.Run(name, s)
-	if err != nil {
-		log.Printf("Service %s failed: %v", name, err)
-	}
+	cmd := exec.Command("go", "run", "C:\\Users\\computer\\Music\\audiodynamic08\\audiod8.go")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	wg.Wait()
+	return err
 }

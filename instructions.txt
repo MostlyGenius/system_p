@@ -1,0 +1,27 @@
+Install the golang.org/x/sys package if you haven't already:
+bash
+Copy code
+go get -u golang.org/x/sys
+Compile the program into an executable binary:
+bash
+Copy code
+go build -o time_writer.exe time_writer.go
+Open an administrative Command Prompt or PowerShell and navigate to the folder containing the time_writer.exe file.
+
+Create the service:
+
+bash
+Copy code
+sc create MyTimeWriterSvc binPath= "C:\path\to\time_writer.exe"
+Replace C:\path\to\time_writer.exe with the actual path to your compiled binary. This command creates a new Windows service named "MyTimeWriterSvc" and sets the path to the executable.
+
+Set the service to automatically restart:
+bash
+Copy code
+sc failure MyTimeWriterSvc reset= 60 actions= restart/5000/restart/5000/restart/5000
+This command sets the service to restart itself after 5 seconds (5000 milliseconds) upon failure, with a reset period of 60 seconds.
+
+Start the service:
+bash
+Copy code
+sc start MyTimeWriterSvc
