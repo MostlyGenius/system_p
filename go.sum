@@ -1,3 +1,5 @@
+github.com/ecnepsnai/discord v1.2.1 h1:rtdyzVmCuzIoot9SNJ+lrBO/Jq4toQf5Wq4KGBl3MdM=
+github.com/ecnepsnai/discord v1.2.1/go.mod h1:28QckHg22piBfbG1qUVL9GBEhKoZ0bgKEV5LHUUnud8=
 github.com/gen2brain/shm v0.0.0-20200228170931-49f9650110c5 h1:Y5Q2mEwfzjMt5+3u70Gtw93ZOu2UuPeeeTBDntF7FoY=
 github.com/gen2brain/shm v0.0.0-20200228170931-49f9650110c5/go.mod h1:uF6rMu/1nvu+5DpiRLwusA6xB8zlkNoGzKn8lmYONUo=
 github.com/jezek/xgb v0.0.0-20210312150743-0e0f116e1240 h1:dy+DS31tGEGCsZzB45HmJJNHjur8GDgtRNX9U7HnSX4=
